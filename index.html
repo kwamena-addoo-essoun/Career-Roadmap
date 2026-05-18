@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily Time Budget Planner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #222636;
+      --border: #2e3248;
+      --text: #e8eaf6;
+      --text-muted: #8891b0;
+      --accent: #6c63ff;
+      --accent-glow: rgba(108, 99, 255, 0.25);
+
+      /* Activity colors */
+      --sleep-bg: #0d1b3e;
+      --sleep-border: #1e3a6e;
+      --sleep-icon: #4a7fb5;
+
+      --bible-bg: #2a2000;
+      --bible-border: #c9a227;
+      --bible-icon: #f5c842;
+
+      --piano-bg: #1e0a2e;
+      --piano-border: #7b2d9e;
+      --piano-icon: #b455e8;
+
+      --study-bg: #0a2310;
+      --study-border: #2d7a3a;
+      --study-icon: #4caf50;
+
+      --nephew-bg: #2a1200;
+      --nephew-border: #c45c00;
+      --nephew-icon: #ff7c20;
+
+      --free-bg: #1c1c1c;
+      --free-border: #444;
+      --free-icon: #9e9e9e;
+
+      --work-bg: #0d0d1a;
+      --work-border: #2d3561;
+      --work-icon: #5c6bc0;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      padding: 0 0 60px;
+    }
+
+    /* ===== HEADER ===== */
+    header {
+      background: linear-gradient(135deg, #1a1d27 0%, #14162a 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 28px 20px 24px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+
+    .header-date {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 6px;
+    }
+
+    .header-day {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .header-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ===== WEEK PROGRESS ===== */
+    .week-progress-wrap {
+      max-width: 640px;
+      margin: 28px auto 0;
+      padding: 0 20px;
+    }
+
+    .week-progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .week-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .week-pct {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--accent);
+    }
+
+    .progress-track {
+      background: var(--surface2);
+      border-radius: 99px;
+      height: 8px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, #6c63ff, #a78bfa);
+      transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    /* ===== ROADMAP CARD ===== */
+    .roadmap-card {
+      max-width: 640px;
+      margin: 20px auto 0;
+      padding: 0 20px;
+    }
+
+    .roadmap-inner {
+      background: linear-gradient(135deg, #1a1035 0%, #1e1640 100%);
+      border: 1px solid var(--accent);
+      border-radius: 14px;
+      padding: 18px 20px;
+      box-shadow: 0 0 24px var(--accent-glow);
+    }
+
+    .roadmap-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      margin-bottom: 6px;
+    }
+
+    .roadmap-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .roadmap-badge {
+      background: var(--accent);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 99px;
+    }
+
+    /* ===== SCHEDULE SECTION ===== */
+    .schedule-section {
+      max-width: 640px;
+      margin: 24px auto 0;
+      padding: 0 20px;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      margin-bottom: 12px;
+    }
+
+    /* ===== ACTIVITY CARD ===== */
+    .activity-card {
+      border-radius: 14px;
+      border: 1px solid;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
+      cursor: default;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .activity-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,0.03);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .activity-card:hover::before { opacity: 1; }
+
+    /* Locked cards */
+    .activity-card.locked {
+      opacity: 0.72;
+    }
+
+    /* Completed state */
+    .activity-card.completed {
+      opacity: 0.55;
+    }
+    .activity-card.completed .activity-name {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    /* Color themes */
+    .card-sleep    { background: var(--sleep-bg);   border-color: var(--sleep-border); }
+    .card-bible    { background: var(--bible-bg);   border-color: var(--bible-border); }
+    .card-piano    { background: var(--piano-bg);   border-color: var(--piano-border); }
+    .card-study    { background: var(--study-bg);   border-color: var(--study-border); }
+    .card-nephew   { background: var(--nephew-bg);  border-color: var(--nephew-border);}
+    .card-free     { background: var(--free-bg);    border-color: var(--free-border);  }
+    .card-work     { background: var(--work-bg);    border-color: var(--work-border);  }
+
+    /* Icon circle */
+    .activity-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .card-sleep  .activity-icon { background: rgba(74,127,181,0.18); }
+    .card-bible  .activity-icon { background: rgba(245,200,66,0.18); }
+    .card-piano  .activity-icon { background: rgba(180,85,232,0.18); }
+    .card-study  .activity-icon { background: rgba(76,175,80,0.18);  }
+    .card-nephew .activity-icon { background: rgba(255,124,32,0.18); }
+    .card-free   .activity-icon { background: rgba(158,158,158,0.18);}
+    .card-work   .activity-icon { background: rgba(92,107,192,0.18); }
+
+    /* Content */
+    .activity-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .activity-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: color 0.2s, text-decoration 0.2s;
+    }
+
+    .activity-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .activity-time {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .activity-duration {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 99px;
+      background: rgba(255,255,255,0.07);
+      color: var(--text-muted);
+    }
+
+    .recurring-badge {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 99px;
+      background: rgba(255,255,255,0.06);
+      color: var(--text-muted);
+    }
+
+    /* Right side */
+    .activity-right {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .lock-badge {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: rgba(255,255,255,0.06);
+      padding: 3px 9px;
+      border-radius: 99px;
+    }
+
+    /* Custom checkbox */
+    .check-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .check-wrap input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 7px;
+      border: 2px solid var(--border);
+      background: transparent;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+      flex-shrink: 0;
+    }
+
+    .check-wrap input[type="checkbox"]:checked {
+      background: var(--accent);
+      border-color: var(--accent);
+      transform: scale(1.08);
+    }
+
+    .check-wrap input[type="checkbox"]:checked::after {
+      content: '';
+      position: absolute;
+      top: 4px; left: 7px;
+      width: 6px; height: 10px;
+      border: 2px solid #fff;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg);
+    }
+
+    .check-wrap input[type="checkbox"]:hover {
+      border-color: var(--accent);
+    }
+
+    .check-wrap input[type="checkbox"]:active {
+      transform: scale(0.92);
+    }
+
+    /* ===== COMPLETION BANNER ===== */
+    .completion-banner {
+      max-width: 640px;
+      margin: 20px auto 0;
+      padding: 0 20px;
+      display: none;
+    }
+
+    .completion-banner.visible { display: block; }
+
+    .completion-inner {
+      background: linear-gradient(135deg, #0a2010 0%, #0d2e17 100%);
+      border: 1px solid #2d7a3a;
+      border-radius: 14px;
+      padding: 18px 20px;
+      text-align: center;
+      box-shadow: 0 0 24px rgba(76,175,80,0.2);
+      animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+
+    .completion-emoji { font-size: 28px; margin-bottom: 6px; }
+    .completion-text {
+      font-size: 17px;
+      font-weight: 700;
+      color: #4caf50;
+      margin-bottom: 4px;
+    }
+    .completion-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ===== RESET BUTTON ===== */
+    .reset-wrap {
+      max-width: 640px;
+      margin: 20px auto 0;
+      padding: 0 20px;
+      text-align: center;
+    }
+
+    .btn-reset {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 24px;
+      border-radius: 99px;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+      letter-spacing: 0.3px;
+    }
+
+    .btn-reset:hover {
+      border-color: #e53935;
+      color: #ef5350;
+      background: rgba(229,57,53,0.08);
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      max-width: 640px;
+      margin: 32px auto 0;
+      padding: 0 20px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 480px) {
+      header { padding: 20px 16px 18px; }
+      .header-day { font-size: 22px; }
+      .week-progress-wrap,
+      .roadmap-card,
+      .schedule-section,
+      .completion-banner,
+      .reset-wrap,
+      footer { padding: 0 14px; }
+      .activity-card { padding: 12px 14px; gap: 10px; }
+      .activity-icon { width: 36px; height: 36px; font-size: 17px; border-radius: 10px; }
+      .activity-name { font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-date" id="headerDate">Loading...</div>
+    <div class="header-day" id="headerDay">Daily Planner</div>
+    <div class="header-sub">Your daily time budget — stay on track 🎯</div>
+  </header>
+
+  <!-- WEEK PROGRESS -->
+  <div class="week-progress-wrap">
+    <div class="week-progress-header">
+      <span class="week-label" id="weekLabel">Week — of 16</span>
+      <span class="week-pct" id="weekPct">0%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+    </div>
+  </div>
+
+  <!-- ROADMAP TASK CARD -->
+  <div class="roadmap-card">
+    <div class="roadmap-inner">
+      <div class="roadmap-eyebrow">📚 This Week's Study Goal</div>
+      <div class="roadmap-title">
+        <span id="roadmapTask">Loading...</span>
+        <span class="roadmap-badge" id="roadmapWeekBadge">W1</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCHEDULE -->
+  <div class="schedule-section">
+    <div class="section-label">Today's Schedule</div>
+
+    <!-- Sleep -->
+    <div class="activity-card card-sleep locked" id="card-sleep">
+      <div class="activity-icon">😴</div>
+      <div class="activity-content">
+        <div class="activity-name">Sleep</div>
+        <div class="activity-meta">
+          <span class="activity-time">6:00 AM – 1:30 PM</span>
+          <span class="activity-duration">7.5 hrs</span>
+          <span class="recurring-badge">🔁 Mon–Fri</span>
+        </div>
+      </div>
+      <div class="activity-right">
+        <span class="lock-badge">Auto</span>
+      </div>
+    </div>
+
+    <!-- Bible Studies -->
+    <div class="activity-card card-bible" id="card-bible">
+      <div class="activity-icon">📖</div>
+      <div class="activity-content">
+        <div class="activity-name">Bible Studies</div>
+        <div class="activity-meta">
+          <span class="activity-time">1:30 PM – 2:00 PM</span>
+          <span class="activity-duration">30 mins</span>
+          <span class="recurring-badge">🔁 Mon–Fri</span>
+        </div>
+      </div>
+      <div class="activity-right">
+        <label class="check-wrap">
+          <input type="checkbox" id="chk-bible" data-key="bible" />
+        </label>
+      </div>
+    </div>
+
+    <!-- Piano -->
+    <div class="activity-card card-piano" id="card-piano">
+      <div class="activity-icon">🎹</div>
+      <div class="activity-content">
+        <div class="activity-name">Piano Lessons</div>
+        <div class="activity-meta">
+          <span class="activity-time">2:00 PM – 2:30 PM</span>
+          <span class="activity-duration">30 mins</span>
+          <span class="recurring-badge">🔁 Mon–Fri</span>
+        </div>
+      </div>
+      <div class="activity-right">
+        <label class="check-wrap">
+          <input type="checkbox" id="chk-piano" data-key="piano" />
+        </label>
+      </div>
+    </div>
+
+    <!-- Career Study Part 1 -->
+    <div class="activity-card card-study" id="card-study1">
+      <div class="activity-icon">💻</div>
+      <div class="activity-content">
+        <div class="activity-name">Career Roadmap Study (Part 1)</div>
+        <div class="activity-meta">
+          <span class="activity-time">2:30 PM – 3:00 PM</span>
+          <span class="activity-duration">30 mins</span>
+          <span class="recurring-badge">🔁 Mon–Fri</span>
+        </div>
+      </div>
+      <div class="activity-right">
+        <label class="check-wrap">
+          <input type="checkbox" id="chk-study1" data-key="study1" />
+        </label>
+      </div>
+    </div>
+
+    <!-- Nephew Pickup -->
+    <div class="activity-card card-nephew" id="card-nephew">
+      <div class="activity-icon">🚗</div>
+      <div class="activity-content">
+        <div class="activity-name">Pick Up Nephew from School</div>
+        <div class="activity-meta">
+          <span class="activity-time">3:00 PM – 3:30 PM</span>
+          <span class="activity-duration">30 mins</span>
+          <span class="recurring-badge">🔁 Mon–Fri</span>
+        </div>
+      </div>
+      <div class="activity-right">
+        <label class="check-wrap">
+          <input type="checkbox" id="chk-nephew" data-key="nephew" />
+        </label>
+      </div>
+    </div>
+
+    <!-- Career Study Part 2 -->
+    <div class="activity-card card-study" id="card-study2">
+      <div class="activity-icon">💻</div>
+      <div class="activity-content">
+        <div class="activity-name">Career Roadmap Study (Part 2)</div>
+        <div class="activity-meta">
+          <span class="activity-time">3:30 PM – 5:30 PM</span>
+          <span class="activity-duration">2 hrs</span>
+          <span class="recurring-badge">🔁 Mon–Fri</span>
+        </div>
+      </div>
+      <div class="activity-right">
+        <label class="check-wrap">
+          <input type="checkbox" id="chk-study2" data-key="study2" />
+        </label>
+      </div>
+    </div>
+
+    <!-- Free Time -->
+    <div class="activity-card card-free locked" id="card-free">
+      <div class="activity-icon">🕓</div>
+      <div class="activity-content">
+        <div class="activity-name">Free / Buffer Time</div>
+        <div class="activity-meta">
+          <span class="activity-time">5:30 PM – 7:00 PM</span>
+          <span class="activity-duration">1.5 hrs</span>
+          <span class="recurring-badge">🔁 Mon–Fri</span>
+        </div>
+      </div>
+      <div class="activity-right">
+        <span class="lock-badge">Auto</span>
+      </div>
+    </div>
+
+    <!-- Work -->
+    <div class="activity-card card-work locked" id="card-work">
+      <div class="activity-icon">🏢</div>
+      <div class="activity-content">
+        <div class="activity-name">Work</div>
+        <div class="activity-meta">
+          <span class="activity-time">7:00 PM – 5:30 AM</span>
+          <span class="activity-duration">10.5 hrs</span>
+          <span class="recurring-badge">🔁 Mon–Fri</span>
+        </div>
+      </div>
+      <div class="activity-right">
+        <span class="lock-badge">Auto</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPLETION BANNER -->
+  <div class="completion-banner" id="completionBanner">
+    <div class="completion-inner">
+      <div class="completion-emoji">🔥</div>
+      <div class="completion-text">Day complete! You're crushing it!</div>
+      <div class="completion-sub">All activities checked off — keep the momentum going 🚀</div>
+    </div>
+  </div>
+
+  <!-- RESET BUTTON -->
+  <div class="reset-wrap">
+    <button class="btn-reset" id="btnReset">↺ Reset Day</button>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>Built with 💜 · <a href="DATABRICKS_CAREER_ROADMAP.md" target="_blank">View Full Roadmap</a></p>
+  </footer>
+
+  <script>
+    // ─── Constants ────────────────────────────────────────────────────────────
+    const START_DATE = new Date('2026-05-18T00:00:00');
+    const TOTAL_WEEKS = 16;
+
+    const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+    const WEEK_TASKS = {
+      1:  'Week 1 — SQL Basics',
+      2:  'Week 2 — SQL Intermediate + Data Concepts',
+      3:  'Week 3 — Python Basics Part 1',
+      4:  'Week 4 — Python Basics Part 2',
+      5:  'Week 5 — Get Into Databricks',
+      6:  'Week 6 — Lakehouse Fundamentals Certification',
+      7:  'Week 7 — Intro to Apache Spark & PySpark',
+      8:  'Week 8 — Delta Lake & Data Pipelines',
+      9:  'Week 9 — Data Engineer Associate Exam Prep (Part 1)',
+      10: 'Week 10 — Data Engineer Associate Exam Prep (Part 2)',
+      11: 'Week 11 — Take the Exam + Build Project #1',
+      12: 'Week 12 — GenAI on Databricks',
+      13: 'Week 13 — Build Project #2 (GenAI Project)',
+      14: 'Week 14 — Polish Profile & Start Applying',
+      15: 'Weeks 15–16 — Apply for Jobs',
+      16: 'Weeks 15–16 — Apply for Jobs',
+    };
+
+    const CHECKABLE_KEYS = ['bible', 'piano', 'study1', 'nephew', 'study2'];
+
+    // ─── Date helpers ─────────────────────────────────────────────────────────
+    function todayKey() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+
+    function currentWeekNumber() {
+      const now = new Date();
+      // Strip time
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const start = new Date(START_DATE.getFullYear(), START_DATE.getMonth(), START_DATE.getDate());
+      const diffMs = today - start;
+      if (diffMs < 0) return 1;
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      const week = Math.floor(diffDays / 7) + 1;
+      return Math.min(Math.max(week, 1), TOTAL_WEEKS);
+    }
+
+    // ─── Render header ────────────────────────────────────────────────────────
+    function renderHeader() {
+      const now = new Date();
+      document.getElementById('headerDate').textContent =
+        `${DAYS[now.getDay()]}, ${MONTHS[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+      document.getElementById('headerDay').textContent =
+        `${DAYS[now.getDay()]} Planner`;
+    }
+
+    // ─── Render week progress ─────────────────────────────────────────────────
+    function renderWeekProgress() {
+      const week = currentWeekNumber();
+      const pct = Math.round((week / TOTAL_WEEKS) * 100);
+      document.getElementById('weekLabel').textContent = `Week ${week} of ${TOTAL_WEEKS}`;
+      document.getElementById('weekPct').textContent = `${pct}%`;
+      document.getElementById('progressFill').style.width = `${pct}%`;
+    }
+
+    // ─── Render roadmap task ──────────────────────────────────────────────────
+    function renderRoadmapTask() {
+      const week = currentWeekNumber();
+      const task = WEEK_TASKS[week] || `Week ${week} — Continue the Roadmap`;
+      // Strip the "Week N — " prefix for display, show just the title
+      const title = task.replace(/^Weeks? \d+[–\-]\d* — /, '').replace(/^Week \d+ — /, '');
+      document.getElementById('roadmapTask').textContent = title;
+      document.getElementById('roadmapWeekBadge').textContent = `W${week}`;
+    }
+
+    // ─── localStorage key ─────────────────────────────────────────────────────
+    function storageKey() {
+      return `planner_${todayKey()}`;
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(storageKey());
+        return raw ? JSON.parse(raw) : {};
+      } catch { return {}; }
+    }
+
+    function saveState(state) {
+      try {
+        localStorage.setItem(storageKey(), JSON.stringify(state));
+      } catch {}
+    }
+
+    // ─── Apply checkbox state to card ─────────────────────────────────────────
+    function applyCardState(key, checked) {
+      const cardMap = {
+        bible:  'card-bible',
+        piano:  'card-piano',
+        study1: 'card-study1',
+        nephew: 'card-nephew',
+        study2: 'card-study2',
+      };
+      const card = document.getElementById(cardMap[key]);
+      if (!card) return;
+      if (checked) {
+        card.classList.add('completed');
+      } else {
+        card.classList.remove('completed');
+      }
+    }
+
+    // ─── Check completion ─────────────────────────────────────────────────────
+    function checkCompletion() {
+      const allDone = CHECKABLE_KEYS.every(k => {
+        const el = document.getElementById(`chk-${k}`);
+        return el && el.checked;
+      });
+      const banner = document.getElementById('completionBanner');
+      if (allDone) {
+        banner.classList.add('visible');
+      } else {
+        banner.classList.remove('visible');
+      }
+    }
+
+    // ─── Init checkboxes ──────────────────────────────────────────────────────
+    function initCheckboxes() {
+      const state = loadState();
+      CHECKABLE_KEYS.forEach(key => {
+        const chk = document.getElementById(`chk-${key}`);
+        if (!chk) return;
+        chk.checked = !!state[key];
+        applyCardState(key, chk.checked);
+
+        chk.addEventListener('change', () => {
+          const current = loadState();
+          current[key] = chk.checked;
+          saveState(current);
+          applyCardState(key, chk.checked);
+          checkCompletion();
+        });
+      });
+      checkCompletion();
+    }
+
+    // ─── Reset Day ────────────────────────────────────────────────────────────
+    document.getElementById('btnReset').addEventListener('click', () => {
+      CHECKABLE_KEYS.forEach(key => {
+        const chk = document.getElementById(`chk-${key}`);
+        if (chk) chk.checked = false;
+        applyCardState(key, false);
+      });
+      saveState({});
+      checkCompletion();
+    });
+
+    // ─── Boot ────────────────────────────────────────────────────────────────
+    renderHeader();
+    renderWeekProgress();
+    renderRoadmapTask();
+    initCheckboxes();
+  </script>
+</body>
+</html>
