@@ -685,8 +685,8 @@
       12: 'Week 12 — GenAI on Databricks',
       13: 'Week 13 — Build Project #2 (GenAI Project)',
       14: 'Week 14 — Polish Profile & Start Applying',
-      15: 'Weeks 15–16 — Apply for Jobs',
-      16: 'Weeks 15–16 — Apply for Jobs',
+      15: 'Week 15 — Apply for Jobs (Part 1)',
+      16: 'Week 16 — Apply for Jobs (Part 2 + Follow-ups)',
     };
 
     const CHECKABLE_KEYS = ['bible', 'piano', 'study1', 'nephew', 'study2'];
@@ -732,7 +732,7 @@
       const week = currentWeekNumber();
       const task = WEEK_TASKS[week] || `Week ${week} — Continue the Roadmap`;
       // Strip the "Week N — " prefix for display, show just the title
-      const title = task.replace(/^Weeks? \d+[–\-]\d* — /, '').replace(/^Week \d+ — /, '');
+      const title = task.replace(/^Week \d+ \u2014 /, '');
       document.getElementById('roadmapTask').textContent = title;
       document.getElementById('roadmapWeekBadge').textContent = `W${week}`;
     }
