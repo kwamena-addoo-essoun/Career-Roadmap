@@ -410,6 +410,28 @@
       color: var(--text-muted);
     }
 
+    .completion-actions {
+      margin-top: 14px;
+    }
+
+    .btn-next-day {
+      background: var(--accent);
+      border: 1px solid var(--accent);
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 10px 18px;
+      border-radius: 99px;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.2s ease;
+    }
+
+    .btn-next-day:hover {
+      opacity: 0.92;
+      transform: translateY(-1px);
+    }
+
     /* ===== RESET BUTTON ===== */
     .reset-wrap {
       max-width: 640px;
@@ -649,6 +671,9 @@
       <div class="completion-emoji">🔥</div>
       <div class="completion-text">Day complete! You're crushing it!</div>
       <div class="completion-sub">All activities checked off — keep the momentum going 🚀</div>
+      <div class="completion-actions">
+        <button class="btn-next-day" id="btnNextDay" type="button">Start Tomorrow →</button>
+      </div>
     </div>
   </div>
 
@@ -690,11 +715,46 @@
     };
 
     const CHECKABLE_KEYS = ['bible', 'piano', 'study1', 'nephew', 'study2'];
+    const ACTIVE_DATE_STORAGE_KEY = 'planner_active_date';
 
     // ─── Date helpers ─────────────────────────────────────────────────────────
-    function todayKey() {
-      const d = new Date();
+    function formatDateKey(d) {
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+
+    function parseDateKey(key) {
+      const [year, month, day] = key.split('-').map(Number);
+      return new Date(year, month - 1, day);
+    }
+
+    function todayKey() {
+      let key = '';
+      try {
+        key = localStorage.getItem(ACTIVE_DATE_STORAGE_KEY) || '';
+      } catch {}
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) {
+        key = formatDateKey(new Date());
+        try {
+          localStorage.setItem(ACTIVE_DATE_STORAGE_KEY, key);
+        } catch {}
+      }
+      return key;
+    }
+
+    function setActiveDate(key) {
+      try {
+        localStorage.setItem(ACTIVE_DATE_STORAGE_KEY, key);
+      } catch {}
+    }
+
+    function activeDate() {
+      return parseDateKey(todayKey());
+    }
+
+    function nextDateKey() {
+      const d = activeDate();
+      d.setDate(d.getDate() + 1);
+      return formatDateKey(d);
     }
 
     // ─── Completed-days tracking ──────────────────────────────────────────────
@@ -728,7 +788,7 @@
 
     // ─── Render header ────────────────────────────────────────────────────────
     function renderHeader() {
-      const now = new Date();
+      const now = activeDate();
       document.getElementById('headerDate').textContent =
         `${DAYS[now.getDay()]}, ${MONTHS[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
       document.getElementById('headerDay').textContent =
@@ -772,6 +832,17 @@
       } catch {}
     }
 
+    function syncCheckboxes() {
+      const state = loadState();
+      CHECKABLE_KEYS.forEach(key => {
+        const chk = document.getElementById(`chk-${key}`);
+        if (!chk) return;
+        chk.checked = !!state[key];
+        applyCardState(key, chk.checked);
+      });
+      checkCompletion();
+    }
+
     // ─── Apply checkbox state to card ─────────────────────────────────────────
     function applyCardState(key, checked) {
       const cardMap = {
@@ -809,13 +880,9 @@
 
     // ─── Init checkboxes ──────────────────────────────────────────────────────
     function initCheckboxes() {
-      const state = loadState();
       CHECKABLE_KEYS.forEach(key => {
         const chk = document.getElementById(`chk-${key}`);
         if (!chk) return;
-        chk.checked = !!state[key];
-        applyCardState(key, chk.checked);
-
         chk.addEventListener('change', () => {
           const current = loadState();
           current[key] = chk.checked;
@@ -824,21 +891,20 @@
           checkCompletion();
         });
       });
-      checkCompletion();
+      syncCheckboxes();
     }
 
     // ─── Reset Day ────────────────────────────────────────────────────────────
     document.getElementById('btnReset').addEventListener('click', () => {
-      CHECKABLE_KEYS.forEach(key => {
-        const chk = document.getElementById(`chk-${key}`);
-        if (chk) chk.checked = false;
-        applyCardState(key, false);
-      });
       saveState({});
-      markTodayComplete(false);
-      renderWeekProgress();
-      renderRoadmapTask();
-      checkCompletion();
+      syncCheckboxes();
+    });
+
+    document.getElementById('btnNextDay').addEventListener('click', () => {
+      setActiveDate(nextDateKey());
+      saveState({});
+      renderHeader();
+      syncCheckboxes();
     });
 
     // ─── Boot ────────────────────────────────────────────────────────────────
