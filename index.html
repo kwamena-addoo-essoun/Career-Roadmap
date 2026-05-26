@@ -664,7 +664,7 @@
 
   <script>
     // ─── Constants ────────────────────────────────────────────────────────────
-    const START_DATE = new Date('2026-05-18T00:00:00');
+    const START_DATE = new Date('2026-05-26T00:00:00');
     const TOTAL_WEEKS = 16;
 
     const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -697,15 +697,32 @@
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     }
 
+    // ─── Completed-days tracking ──────────────────────────────────────────────
+    function getCompletedDates() {
+      try {
+        const raw = localStorage.getItem('planner_completed_dates');
+        return raw ? JSON.parse(raw) : [];
+      } catch { return []; }
+    }
+
+    function markTodayComplete(done) {
+      const dates = getCompletedDates();
+      const key = todayKey();
+      const idx = dates.indexOf(key);
+      if (done && idx === -1) {
+        dates.push(key);
+        localStorage.setItem('planner_completed_dates', JSON.stringify(dates));
+      } else if (!done && idx !== -1) {
+        dates.splice(idx, 1);
+        localStorage.setItem('planner_completed_dates', JSON.stringify(dates));
+      }
+    }
+
+    // Week number is based on how many days have been fully completed,
+    // so skipped days never count toward progress.
     function currentWeekNumber() {
-      const now = new Date();
-      // Strip time
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const start = new Date(START_DATE.getFullYear(), START_DATE.getMonth(), START_DATE.getDate());
-      const diffMs = today - start;
-      if (diffMs < 0) return 1;
-      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-      const week = Math.floor(diffDays / 7) + 1;
+      const completedDays = getCompletedDates().length;
+      const week = Math.floor(completedDays / 7) + 1;
       return Math.min(Math.max(week, 1), TOTAL_WEEKS);
     }
 
@@ -785,6 +802,9 @@
       } else {
         banner.classList.remove('visible');
       }
+      markTodayComplete(allDone);
+      renderWeekProgress();
+      renderRoadmapTask();
     }
 
     // ─── Init checkboxes ──────────────────────────────────────────────────────
@@ -815,6 +835,9 @@
         applyCardState(key, false);
       });
       saveState({});
+      markTodayComplete(false);
+      renderWeekProgress();
+      renderRoadmapTask();
       checkCompletion();
     });
 
